@@ -3,7 +3,6 @@ module.exports = function(io, streams) {
   io.on('connection', function(client) {
     console.log('-- ' + client.id + ' joined --');
     client.emit('id', client.id);
-
     client.on('message', function (details) {
       var otherClient = io.sockets.connected[details.to];
 
@@ -17,12 +16,15 @@ module.exports = function(io, streams) {
       
     client.on('readyToStream', function(options) {
       console.log('-- ' + client.id + ' is ready to stream --');
-      
       streams.addStream(client.id, options.name); 
     });
     
     client.on('update', function(options) {
       streams.update(client.id, options.name);
+    });
+
+    client.on('chat', function(options) {
+      client.broadcast.emit('chat', options);
     });
 
     function leave() {

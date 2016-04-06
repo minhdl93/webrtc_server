@@ -23,6 +23,11 @@ var PeerManager = (function () {
   socket.on('id', function(id) {
     localId = id;
   });
+
+  socket.on('minh', function(data) {
+      alert("you are connected to other");
+  });
+
       
   function addPeer(remoteId) {
     var peer = new Peer(config.peerConnectionConfig, config.peerConnectionConstraints);
@@ -59,6 +64,7 @@ var PeerManager = (function () {
   }
   function answer(remoteId) {
     var pc = peerDatabase[remoteId].pc;
+    
     pc.createAnswer(
       function(sessionDescription) {
         pc.setLocalDescription(sessionDescription);
@@ -109,7 +115,6 @@ var PeerManager = (function () {
   }
   function send(type, to, payload) {
     console.log('sending ' + type + ' to ' + to);
-
     socket.emit('message', {
       to: to,
       type: type,
