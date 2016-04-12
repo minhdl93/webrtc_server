@@ -13,6 +13,10 @@ var favicon = require('serve-favicon')
 
 var app = express();
 
+//moongo db connection
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost:27017/sweetsmile');
+
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
