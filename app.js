@@ -41,7 +41,9 @@ var server = app.listen(app.get('port'), function(){
 });
 
 var io = require('socket.io').listen(server);
+
+
 /**
  * Socket.io event handling
  */
-require('./app/socketHandler.js')(io, streams);
+require('./app/socketHandler.js')(io, streams,app);

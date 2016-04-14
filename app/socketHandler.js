@@ -1,4 +1,4 @@
-module.exports = function(io, streams) {
+module.exports = function(io, streams,app) {
   var clients = {};
   var reflected = [];
   
@@ -52,8 +52,9 @@ module.exports = function(io, streams) {
 
     client.on('resetId', function(options) {
       //console.log("rESET ID EVENT");
-      //console.log("My id " + options.myId + " id by nodejs " + text + " value client " + clients[text]+" "+client.id);
+      // console.log("My id " + options.myId + " id by nodejs " + text + " value client " + clients[text]+" "+client.id);
       clients[options.myId] = client.id;
+
       //delete clients[text];
       client.emit('id', options.myId);
       reflected[text] = options.myId;
@@ -141,5 +142,17 @@ module.exports = function(io, streams) {
     client.on('disconnect', leave);
     client.on('leave', leave);
   });
+
+  var getStatus = function(req, res) {
+      var clientid = clients[req.params.id];
+      console.log("lien minh get user statys"+clientid+ " "+req.params.id);
+      if(io.sockets.connected[clientid]!=undefined){
+        res.send({status: 1});
+      }else{
+        res.send({status: -1});
+      }
+    };
+
+  app.get('/status/:id', getStatus);
 };
 

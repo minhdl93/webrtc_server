@@ -17,18 +17,19 @@ module.exports = function(app, streams) {
   var login = function(req, res) {
     User.findOne({ username: req.body.username }, function(err, user) {
           if (!user){
-            res.send([{status: 0}]);
+            res.send({status: -1});
           }else{
             // test a matching password
             if(user.comparePassword(req.body.password)==1)
             {
-              Friend.findOne({ username: req.body.username }, function(err, friend) {
-                if (!friend){
-                  res.send({status: 1,id: user.id});
-                }else{
-                  res.send({status: 1,id: user.id,id: friend.friend_id});
-                }
-              });
+              res.send({status: 1,id: user.id, name: user.username});
+              // Friend.findOne({ username: req.body.username }, function(err, friend) {
+              //   if (!friend){
+              //     res.send({status: 1,id: user.id});
+              //   }else{
+              //     res.send({status: 1,id: user.id,id: friend.friend_id});
+              //   }
+              // });
               //??? return id to user
               //return list of friends id and status online offline
             }else{
@@ -40,13 +41,25 @@ module.exports = function(app, streams) {
 
   //GET list of users
   var listUser = function(req, res) {
-    User.find(function(err, users) {
-      if (err){
-        res.send({status: -1});
-      }else{
-        res.json(users);
-      }
+    var id = req.params.id;
+    Friend.find({ 'username': id }, function (err, friends) {
+      var ids = friends.map(function(friend) { return friend.friend_id; });
+      User.find({id: {$ne: ids}}, function(err, users) {
+        if (err){
+          res.send({status: -1});
+        }else{
+          res.json(users);
+        }
+      });
     });
+
+    // User.find(function(err, users) {
+    //   if (err){
+    //     res.send({status: -1});
+    //   }else{
+    //     res.json(users);
+    //   }
+    // });
   };
 
   var listFriend = function(req, res) {
@@ -69,20 +82,35 @@ module.exports = function(app, streams) {
     });
   };
 
+  
+
 
   //POST add friend
   var addFriend = function(req, res) {
+    var username = req.body.username;
+    var friend_id = req.body.friend_id;
       var newFriend = Friend({
-          username: req.body.username,
-          friend_id: req.body.friend_id
+          username: username,
+          friend_id: friend_id
       });
       newFriend.save(function(err) {
         if (err){
           res.send(err);
         }else{
-          res.send({status: 1});
+          var newFriend_reverse = Friend({
+          username: friend_id,
+          friend_id: username
+          });
+          newFriend_reverse.save(function(err) {
+            if (err){
+              res.send(err);
+            }else{
+              res.send({status: 1});
+            }
+          });
         }
       });
+      
   };
 
   // POST register user account
@@ -120,7 +148,8 @@ module.exports = function(app, streams) {
   };
 
   app.get('/streams.json', displayStreams);
-  app.get('/users', listUser);
+  app.get('/users/:id', listUser);
+
   app.post('/friend_name', getPersonName);
   app.post('/friends', listFriend);
   app.post('/login', login);
