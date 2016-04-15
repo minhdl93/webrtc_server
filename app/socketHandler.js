@@ -2,9 +2,6 @@ module.exports = function(io, streams,app) {
   var clients = {};
   var reflected = [];
   
-  //var Schema = mongoose.Schema;
-
-  
   io.on('connection', function(client) {
     console.log('-- ' + client.id + ' joined --');
     var text = "";
@@ -22,23 +19,6 @@ module.exports = function(io, streams,app) {
     } else {
         //clients[text] = client.id;
     }
-
-    //client.emit('id', text);
-    
-    // client.on('message', function (details) {
-    //   //console.log("messae xx "+details.to+" dasd"+clients[details.to]);
-    //   var otherClient = io.sockets.connected[clients[details.to]];
-    //   //console.log("here am i 1, id: "+client.id+" clients: "+clients[client.id]+"' details to "+details.to+" details to "+clients[details.to]);
-    //   if (!otherClient) {
-    //     return;
-    //   }
-    //   //console.log("here am i, id: "+client.id+" clients: "+clients[client.id]+"' details to "+details.to+" detail from "+clients[text]);
-    //   delete details.to;
-    //   details.from = text;
-    //   //console.log("text "+ text+ "from " + clients[text]);
-    //   otherClient.emit('message', details);
-      
-    // });
       
     client.on('readyToStream', function(options) {
       console.log('-- ' + client.id + ' is ready to stream --');
@@ -51,88 +31,44 @@ module.exports = function(io, streams,app) {
     });
 
     client.on('resetId', function(options) {
-      //console.log("rESET ID EVENT");
-      // console.log("My id " + options.myId + " id by nodejs " + text + " value client " + clients[text]+" "+client.id);
       clients[options.myId] = client.id;
-
-      //delete clients[text];
       client.emit('id', options.myId);
       reflected[text] = options.myId;
     });
 
     client.on('message', function (details) {
-      //console.log("messae xx "+details.to+" dasd"+clients[details.to]);
+      console.log("message function "+ details.to);
       var otherClient = io.sockets.connected[clients[details.to]];
-      //console.log("here am i 1, id: "+client.id+"' details to "+details.to+" details to "+clients[details.to]);
-      //console.log("i go there already");
-      //console.log("here am i 1, id: "+client.id+" clients: "+clients[client.id]+"' details to "+details.to);
       if (!otherClient) {
         return;
       }
 
-      //console.log("here am i, id: "+client.id+" clients: "+clients[client.id]+"' details to "+details.to+" detail from "+clients[text]+" reflea from "+reflected[text]);
       delete details.to;
       details.from = reflected[text];
-      // if (details.minh!=null) {
-      //   otherClient.emit('receiveCall', details);
-      // }
-      //otherClient.emit('receiveCall', details);
+
       otherClient.emit('message', details);
-      
     });
 
-    // callback on login
-    // client.on('login', function(options) {
-    //     User.findOne({ username: options.username }, function(err, user) {
-    //       if (err) throw err;
+    client.on('startclient', function (details) {
+      console.log("start client for phone " + details.to);
+        var otherClient = io.sockets.connected[clients[details.to]];
+        details.from = reflected[text];
+        otherClient.emit('receiveCall', details);
+    });
 
-    //       // test a matching password
-    //       if(user.comparePassword(options.password)==1)
-    //       {
-    //         //emit login success
-    //         //console.log('Minh11520232 match'); 
-    //         //??? return id to user
-    //         //return list of friends id and status online offline
-    //       }else{
-    //         //emit login fail
-    //         //console.log('Minh11520232 not match'); 
-    //       }
-    //     });
-    // });
+    client.on('ejectcall', function (details) {
+      var otherClient = io.sockets.connected[clients[details.callerId]];
+      otherClient.emit("ejectcall");
+       
+    });
 
-    //callback function on register
-    // client.on('register', function(options) {
-    //     var newUser = User({
-    //       name: options.name,
-    //       username: options.username,
-    //       password: options.password,
-    //       email: options.email,
-    //       phone: options.phone
-    //     });
-    //     newUser.save(function(err) {
-    //       if (err) throw err;
-    //       //unique user identity
-    //       client.emit('id', text);
-    //     });
-        
-    // });
+    client.on('acceptcall', function (details) {
 
-    //callback function on add contacct
-    // client.on('add user', function(options) {
-    //     var newFriend= Friend({
-    //         username: options.username,
-    //         friend_id: options.friend_id
-    //       });
-    //     newFriend.save(function(err) {
-    //       if (err) throw err;
-    //     });
-    // });
+      var otherClient = io.sockets.connected[clients[details.callerId]];
 
-    //callback function on call other
-    //client.on('call', function(options) {
-        //send message and start call 
-        //maybe check if the other connection been establish
-    //});
+      otherClient.emit("acceptcall",details);
+       
+    });
 
     client.on('chat', function(options) {
       client.broadcast.emit('chat', options);
