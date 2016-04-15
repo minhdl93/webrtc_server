@@ -73,6 +73,10 @@ module.exports = function(io, streams,app) {
       //console.log("here am i, id: "+client.id+" clients: "+clients[client.id]+"' details to "+details.to+" detail from "+clients[text]+" reflea from "+reflected[text]);
       delete details.to;
       details.from = reflected[text];
+      // if (details.minh!=null) {
+      //   otherClient.emit('receiveCall', details);
+      // }
+      //otherClient.emit('receiveCall', details);
       otherClient.emit('message', details);
       
     });
