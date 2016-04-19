@@ -71,6 +71,7 @@ module.exports = function(io, streams,app) {
     });
 
     client.on('chat', function(options) {
+      console.log("chat message "+ options.msg);
       client.broadcast.emit('chat', options);
     });
 
@@ -85,7 +86,7 @@ module.exports = function(io, streams,app) {
 
   var getStatus = function(req, res) {
       var clientid = clients[req.params.id];
-      console.log("lien minh get user statys"+clientid+ " "+req.params.id);
+      //console.log("lien minh get user statys"+clientid+ " "+req.params.id);
       if(io.sockets.connected[clientid]!=undefined){
         res.send({status: 1});
       }else{
