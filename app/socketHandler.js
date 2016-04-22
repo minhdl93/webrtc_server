@@ -59,20 +59,24 @@ module.exports = function(io, streams,app) {
     client.on('ejectcall', function (details) {
       var otherClient = io.sockets.connected[clients[details.callerId]];
       otherClient.emit("ejectcall");
+    });
+
+    client.on('removeVideo', function (details) {
+      var otherClient = io.sockets.connected[clients[details.other]];
+      otherClient.emit("removeVideo");
        
     });
 
     client.on('acceptcall', function (details) {
 
       var otherClient = io.sockets.connected[clients[details.callerId]];
-
       otherClient.emit("acceptcall",details);
        
     });
 
     client.on('chat', function(options) {
-      console.log("chat message "+ options.msg);
-      client.broadcast.emit('chat', options);
+      var otherClient = io.sockets.connected[clients[options.to]];
+      otherClient.emit('chat', options);
     });
 
     function leave() {
