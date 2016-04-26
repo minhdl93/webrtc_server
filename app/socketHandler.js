@@ -1,7 +1,8 @@
 module.exports = function(io, streams,app) {
   var clients = {};
   var reflected = [];
-  
+  var User = require('./model/user');
+  var Friend = require('./model/friend');
   io.on('connection', function(client) {
     console.log('-- ' + client.id + ' joined --');
     var text = "";
@@ -50,10 +51,20 @@ module.exports = function(io, streams,app) {
     });
 
     client.on('startclient', function (details) {
-      console.log("start client for phone " + details.to);
-        var otherClient = io.sockets.connected[clients[details.to]];
-        details.from = reflected[text];
-        otherClient.emit('receiveCall', details);
+      User.findOne({id: reflected[text]}, function(err, user) {
+        if(user){
+          var otherClient = io.sockets.connected[clients[details.to]];
+          details.from = reflected[text];
+          details.name = user.name;
+          otherClient.emit('receiveCall', details);
+        }else{
+          var otherClient = io.sockets.connected[clients[details.to]];
+          details.from = reflected[text];
+          otherClient.emit('receiveCall', details);
+        }
+
+      });
+        
     });
 
     client.on('ejectcall', function (details) {

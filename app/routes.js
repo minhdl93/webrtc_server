@@ -1,6 +1,7 @@
 module.exports = function(app, streams) {
   var User = require('./model/user');
   var Friend = require('./model/friend');
+  console.log('cOME TO ROUTES ');
   // GET home 
   var index = function(req, res) {
     res.render('index', { 
@@ -15,6 +16,7 @@ module.exports = function(app, streams) {
 
   // POST check login info
   var login = function(req, res) {
+    console.log("come here");
     User.findOne({ username: req.body.username }, function(err, user) {
           if (!user){
             res.send({status: -1});
